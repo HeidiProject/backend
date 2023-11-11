@@ -1,0 +1,21 @@
+version: '3'
+services:
+  backend:
+    container_name: backend
+    image: docker.psi.ch:5000/heidi/backend:${VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./app:/opt/app
+      - /usr/local/mxlibs3:/sls/MX/applications/mxlibs3/all-beamlines/stable
+      - /usr/local/mxdbclient:/sls/MX/applications/mxdbclient/all-beamlines/stable
+    networks:
+      - my-network
+
+networks:
+  my-network:
