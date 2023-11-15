@@ -12,6 +12,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./app:/opt/app
+      - /etc/mxsecrets.conf:/opt/app/config.yaml
       - /usr/local/mxlibs3:/sls/MX/applications/mxlibs3/all-beamlines/stable
       - /usr/local/mxdbclient:/sls/MX/applications/mxdbclient/all-beamlines/stable
     networks:
