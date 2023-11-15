@@ -21,8 +21,11 @@ RUN mkdir /opt/app && \
     mkdir -p /sls/MX/applications/mxlibs3/all-beamlines/stable && \
     mkdir -p /sls/MX/applications/mxdbclient/all-beamlines/stable
 
+COPY requirements.txt .
+
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
+
 WORKDIR /opt/app
 
 # expose the port 8000

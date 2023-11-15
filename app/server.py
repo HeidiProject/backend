@@ -40,7 +40,7 @@ import yaml
 
 
 # Load YAML data from secrets file
-with open("/etc/mxsecrets.conf", "r") as stream:
+with open("config.yaml", "r") as stream:
     try:
         yaml_data = yaml.safe_load(stream)
         jwt_secret_key = yaml_data["mongo"]["JWT_SECRET_KEY"]

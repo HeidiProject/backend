@@ -76,7 +76,7 @@ class User(object):
         info = resdata[0][1]
 
         for k, v in info.items():
-            nv = [s.decode("utf-8") if isinstance(s, bytes) else s for s in v]
+            nv = [s.decode("utf-8", "ignore") if isinstance(s, bytes) else s for s in v]
             info[k] = nv
 
         for group in info["memberOf"]:
