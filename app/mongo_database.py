@@ -85,7 +85,7 @@ def delete_token(token):
 
 def generate_api_token():
     """
-    Generate a UUID4 API token.
+    Generate a UUID4 API token for use to programmatically access endpoints.
 
     Returns:
         str: UUID4 token as a string.
