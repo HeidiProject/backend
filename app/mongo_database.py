@@ -158,12 +158,11 @@ def vespa_get_results(user_account):
             }
         ]
     """
+    if user_account[0] == "e":
+        user_account = user_account[1:]
     documents = mxdb.query(
         qtype="aggregate",
-        collection=f"""Vdp&match={{'eaccount':'{user_account}'}}&
-                    project={{'crystfelMinPixCount':1,'crystfelMinSNR':1,'crystfelTreshold':1,
-                    'numberOfImages':1,'numberOfImagesIndexed':1,'mergeID':1,'dataFileName':1,
-                    'createdOn':1}}&sort={{'createdOn':-1}}"""
+        collection=f"""Vdp&match={{'user_data.pgroup':'p{user_account}'}}&project={{'user_data.crystfelMinPixCount':1,'user_data.crystfelMinSNR':1,'user_data.crystfelTreshold':1,'numberOfImages':1,'numberOfImagesIndexed':1,'user_data.runID':1,'filename':1,'createdOn':1}}&sort={{'createdOn':-1}}"""
         # For graphing spots per image add this: {'numberOfSpotsPerImage':1}
     )
     return documents
