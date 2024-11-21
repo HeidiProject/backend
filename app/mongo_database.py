@@ -3,9 +3,11 @@ import uuid
 from loguru import logger
 
 import mxdbclient
+import sfxdbclient
 
 try:
     mxdb = mxdbclient.mxdbclient()
+    sfxdb = sfxdbclient.SFXDBClient()
 except Exception as e:
     logger.info(f"Exception: {e}. Unable to connect to mongo database.")
 
@@ -17,6 +19,8 @@ def get_user(user_account, api_key):
     Returns:
         Str: pgroup/invalid
     """
+    if user_account[0] == "p":
+        user_account = f"e{user_account[1:]}"
     documents = mxdb.query(
         collection="Users", _id=user_account, key=api_key, qtype="find_one"
     )
@@ -100,6 +104,8 @@ def adp_get_results(user_account, after=None, before=None):
     Returns:
         Array of JSON objects
     """
+    if user_account[0] == "p":
+        user_account = f"e{user_account[1:]}"
     if not (after or before):
         documents = mxdb.query(collection="Adp", userAccount=user_account)
     else:
@@ -142,29 +148,39 @@ def adp_get_results(user_account, after=None, before=None):
 def vespa_get_results(user_account):
     """
     Query the Vdp collection for SSX processing information
-
-    Returns:
-        Array: [
-            {
-                '_id': '6511241e540c74f790949ab7',
-                'mergeID': 'lyso',
-                'dataFileName': 'Lyso_run000026_data_000010.h5',
-                'numberOfImages': 10000,
-                'crystfelTreshold': 5.0,
-                'crystfelMinSNR': 3.0,
-                'crystfelMinPixCount': 1,
-                'numberOfImagesIndexed': 1432,
-                'createdOn': '2023-09-21T08:09:34.357000+00:00'
-            }
-        ]
     """
     if user_account[0] == "e":
-        user_account = user_account[1:]
-    documents = mxdb.query(
-        qtype="aggregate",
-        collection=f"""Vdp&match={{'user_data.pgroup':'p{user_account}'}}&project={{'user_data.crystfelMinPixCount':1,'user_data.crystfelMinSNR':1,'user_data.crystfelTreshold':1,'numberOfImages':1,'numberOfImagesIndexed':1,'user_data.runID':1,'filename':1,'createdOn':1}}&sort={{'createdOn':-1}}"""
-        # For graphing spots per image add this: {'numberOfSpotsPerImage':1}
-    )
+        user_account = f"p{user_account[1:]}"
+    experiment_group = user_account
+    documents = sfxdb.get_experiment_data(experiment_group)
+    logger.info(documents)
+    return documents
+
+def summary_get_results(user_account):
+    """
+    Query the Vdp collection for SSX processing information
+    """
+    experiment_group = user_account
+    documents = sfxdb.get_experiment_data_summary(experiment_group)
+    return documents
+
+def ffcs_get_results(user_account):
+    """
+    Query the Vdp collection for SSX processing information
+    """
+    if user_account[0] == "p":
+        user_account = f"e{user_account[1:]}"
+    documents = sfxdb.get_ffcs_data_summary(user_account=user_account)
+    return documents
+
+
+def ffcs_get_campaign_results(user_account, campaign_id):
+    """
+    Query the Vdp collection for SSX processing information
+    """
+    if user_account[0] == "p":
+        user_account = f"e{user_account[1:]}"
+    documents = sfxdb.get_ffcs_campaign_data_summary(user_account=user_account, campaign_id=campaign_id)
     return documents
 
 
