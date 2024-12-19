@@ -56,7 +56,7 @@ class SFXDBClient:
         return []
     
 
-    def get_ffcs_data_summary(self, user_account: str = "") -> List[Dict[str, Any]]:
+    def get_ffcs_campaigns(self, user_account: str = "") -> List[Dict[str, Any]]:
         """
         Fetches experiment data from the FastAPI server.
 

@@ -19,6 +19,10 @@ from mongo_database import (
     ffcs_get_campaign_results,
 )
 
+# from sfxdbclient import (
+#    get_ffcs_campaigns
+# )
+
 from sample_importer import (
     SampleSpreadsheetImporter,
     SpreadsheetImportError,
@@ -157,7 +161,7 @@ def create_app(in_dev_mode=False):
         Returns:
             tuple: A tuple containing the Flask Response and the HTTP status code.
                 The response includes a JSON object with "login" set to True and
-                additional user information like "uids" and "uuid".
+                additional user information like "uids", "uuid", and "campaigns".
 
         """
         username = request.headers.get("X-USERNAME")
@@ -175,12 +179,22 @@ def create_app(in_dev_mode=False):
                 uuid.append(user)
             except Exception as e:
                 return jsonify({"msg": e}), 200
+            
+        # campaigns = []
+        # for account in uids:
+        #     try:
+        #         eaccount = "e" + account
+        #         ffcs_campaigns = get_ffcs_campaigns(eaccount)
+        #         campaigns.append(ffcs_campaigns)
+        #     except Exception as e:
+        #         return jsonify({"msg": e}), 200
 
         resp = jsonify(
             {
                 "login": True,
                 "uids": uids,
                 "uuid": uuid,
+                # "campaigns": campaigns,
             }
         )
         return resp, 200
