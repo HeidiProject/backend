@@ -2,7 +2,7 @@ import requests
 from typing import Any, Dict, List
 
 class SFXDBClient:
-    def __init__(self, base_url: str = ""):
+    def __init__(self, base_url: str = "https://_add_url_here:8008"):
         self.base_url = base_url
         self.session = requests.Session()
 
