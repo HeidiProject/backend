@@ -14,7 +14,14 @@ from mongo_database import (
     get_tokens,
     get_user,
     vespa_get_results,
+    summary_get_results,
+    ffcs_get_results,
+    ffcs_get_campaign_results,
 )
+
+# from sfxdbclient import (
+#    get_ffcs_campaigns
+# )
 
 from sample_importer import (
     SampleSpreadsheetImporter,
@@ -154,7 +161,7 @@ def create_app(in_dev_mode=False):
         Returns:
             tuple: A tuple containing the Flask Response and the HTTP status code.
                 The response includes a JSON object with "login" set to True and
-                additional user information like "uids" and "uuid".
+                additional user information like "uids", "uuid", and "campaigns".
 
         """
         username = request.headers.get("X-USERNAME")
@@ -172,12 +179,22 @@ def create_app(in_dev_mode=False):
                 uuid.append(user)
             except Exception as e:
                 return jsonify({"msg": e}), 200
+            
+        # campaigns = []
+        # for account in uids:
+        #     try:
+        #         eaccount = "e" + account
+        #         ffcs_campaigns = get_ffcs_campaigns(eaccount)
+        #         campaigns.append(ffcs_campaigns)
+        #     except Exception as e:
+        #         return jsonify({"msg": e}), 200
 
         resp = jsonify(
             {
                 "login": True,
                 "uids": uids,
                 "uuid": uuid,
+                # "campaigns": campaigns,
             }
         )
         return resp, 200
@@ -270,6 +287,8 @@ def create_app(in_dev_mode=False):
                 If the request JSON payload is missing the "user_account" parameter.
         """
         user_account = request.json.get("user_account", None)
+        if user_account[0] == "p":
+            user_account = "e" + user_account[1:]
         after = request.json.get("after", None)
         before = request.json.get("before", None)
         if not (after or before):
@@ -302,6 +321,45 @@ def create_app(in_dev_mode=False):
     def vespa_query_mongo():
         user_account = request.json.get("user_account", None)
         docs = vespa_get_results(user_account=user_account)
+        resp = docs
+        return resp, 200
+    
+    @app.route("/api/summary", methods=["GET", "POST"])
+    def summary_query_mongo():
+        user_account = request.json.get("user_account", None)
+        docs = summary_get_results(user_account=user_account)
+        resp = docs
+        return resp, 200
+    
+    @app.route("/api/ffcs", methods=["GET", "POST"])
+    def ffcs_query_mongo():
+        user_account = request.json.get("user_account", None)
+        docs = ffcs_get_results(user_account=user_account)
+        resp = docs
+        return resp, 200
+    
+    @app.route("/api/campaign", methods=["GET", "POST"])
+    def ffcs_campaign_query_mongo():
+        user_account = request.json.get("user_account", None)
+        campaign_id = request.json.get("campaign_id", None)
+        docs = ffcs_get_campaign_results(user_account=user_account, campaign_id=campaign_id)
+        resp = docs
+        return resp, 200
+    
+    @app.route("/api/update", methods=["GET", "POST"])
+    def update_mongo():
+        application = request.json.get("application", None)
+        query = request.json.get("query", None)
+        update = request.json.get("update", None)
+        docs = []
+        resp = docs
+        return resp, 200
+    
+    @app.route("/api/spreadsheet", methods=["GET", "POST"])
+    def download_spreadsheet():
+        data = request.json.get("data", None)
+        file_type = request.json.get("file_type", None)
+        docs = []
         resp = docs
         return resp, 200
 

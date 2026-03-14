@@ -8,12 +8,6 @@ ENV LANG=C.UTF-8 \
     PATH=/opt/conda/bin:$PATH \
     PYTHONPATH="${PYTHONPATH}:/sls/MX/applications/mxlibs3/all-beamlines/stable:/sls/MX/applications/mxdbclient/all-beamlines/stable"
 
-RUN apt-get update --fix-missing && \
-    apt-get install -y vim libsasl2-dev python-dev-is-python3 libldap2-dev libssl-dev gcc && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get purge -y vim && apt-get autoremove -y 
-
 COPY logging.conf /root
 
 # Prepare directory for gunicorn app, mxlibs3 and mxdbclient. They will be mounted in docker-compose
