@@ -17,6 +17,12 @@ RUN mkdir /opt/app && \
 
 COPY requirements.txt .
 
+
+# Configure internal PyPI mirror for DMZ
+
+COPY pip.conf /etc/pip.conf 
+
+
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
