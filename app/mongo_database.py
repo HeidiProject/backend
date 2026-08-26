@@ -166,17 +166,17 @@ def summary_get_results(user_account):
 
 def ffcs_get_results(user_account):
     """
-    Query the Vdp collection for SSX processing information
+    Query FFCS campaigns for a user account.
     """
     if user_account[0] == "p":
         user_account = f"e{user_account[1:]}"
-    documents = sfxdb.get_ffcs_data_summary(user_account=user_account)
+    documents = sfxdb.get_ffcs_campaigns(user_account=user_account)
     return documents
 
 
 def ffcs_get_campaign_results(user_account, campaign_id):
     """
-    Query the Vdp collection for SSX processing information
+    Query FFCS well information for a campaign.
     """
     if user_account[0] == "p":
         user_account = f"e{user_account[1:]}"

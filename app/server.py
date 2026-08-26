@@ -1,4 +1,5 @@
 import uuid
+import re
 
 from flask import Flask, g, jsonify, request, send_from_directory
 
@@ -52,6 +53,19 @@ def is_valid_uuid4(uuid_str):
 compress = Compress()
 
 
+def normalize_experiment_account(user_account):
+    """Return the p-group and e-account forms of an experiment account."""
+    if not isinstance(user_account, str):
+        raise ValueError("Experiment account must be a string.")
+
+    match = re.fullmatch(r"[pe]?(\d+)", user_account.strip().lower())
+    if not match:
+        raise ValueError("Invalid experiment account.")
+
+    account_number = match.group(1)
+    return f"p{account_number}", f"e{account_number}"
+
+
 def create_app(in_dev_mode=False):
     app = Flask(__name__, static_folder="./static")
     app.config["in_dev_mode"] = in_dev_mode
@@ -103,6 +117,38 @@ def create_app(in_dev_mode=False):
             g.user = user
         else:
             return jsonify(error="Invalid Authorization header."), 401
+
+    def permitted_pgroups():
+        """Return the request's permitted p-groups from a token or F5 headers."""
+        authorization = request.headers.get("Authorization")
+        token_pgroup = getattr(g, "user", None)
+
+        if authorization:
+            if not token_pgroup:
+                return set()
+            try:
+                pgroup, _ = normalize_experiment_account(token_pgroup)
+            except ValueError:
+                return set()
+            return {pgroup}
+
+        pgroups = request.headers.get("X-PGROUPS", "")
+        return {
+            f"p{account_number}"
+            for account_number in re.findall(r"\bp(\d+)\b", pgroups.lower())
+        }
+
+    def authorize_experiment_account(user_account):
+        """Validate an account against the identity attached to this request."""
+        try:
+            pgroup, eaccount = normalize_experiment_account(user_account)
+        except ValueError as error:
+            return None, (jsonify(error=str(error)), 400)
+
+        if pgroup not in permitted_pgroups():
+            return None, (jsonify(error="Access to this experiment account is forbidden."), 403)
+
+        return eaccount, None
 
     @app.before_request
     def before_request():
@@ -331,18 +377,38 @@ def create_app(in_dev_mode=False):
         resp = docs
         return resp, 200
     
-    @app.route("/api/ffcs", methods=["GET", "POST"])
+    @app.route("/api/ffcs", methods=["POST"])
     def ffcs_query_mongo():
         user_account = request.json.get("user_account", None)
-        docs = ffcs_get_results(user_account=user_account)
-        resp = docs
-        return resp, 200
+        eaccount, error_response = authorize_experiment_account(user_account)
+        if error_response:
+            return error_response
+
+        docs = ffcs_get_results(user_account=eaccount)
+        campaign_ids = {
+            document.get("_id", {}).get("campaignId")
+            for document in docs
+            if isinstance(document, dict)
+        }
+        campaigns = [
+            {"campaign_id": campaign_id, "display_name": campaign_id}
+            for campaign_id in sorted(campaign_ids - {None})
+        ]
+        return jsonify(campaigns), 200
     
-    @app.route("/api/campaign", methods=["GET", "POST"])
+    @app.route("/api/campaign", methods=["POST"])
     def ffcs_campaign_query_mongo():
         user_account = request.json.get("user_account", None)
         campaign_id = request.json.get("campaign_id", None)
-        docs = ffcs_get_campaign_results(user_account=user_account, campaign_id=campaign_id)
+        eaccount, error_response = authorize_experiment_account(user_account)
+        if error_response:
+            return error_response
+        if not isinstance(campaign_id, str) or not campaign_id.strip():
+            return jsonify(error="Campaign ID is required."), 400
+
+        docs = ffcs_get_campaign_results(
+            user_account=eaccount, campaign_id=campaign_id.strip()
+        )
         resp = docs
         return resp, 200
     
