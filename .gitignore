@@ -1,8 +1,7 @@
 # VS code config
 .vscode/
 
-#added by May
-sfxdbclient.py
+# Deployment-only configuration
 app/config.yaml
 pip.conf
 

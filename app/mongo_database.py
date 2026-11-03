@@ -7,9 +7,10 @@ import sfxdbclient
 
 try:
     mxdb = mxdbclient.mxdbclient()
-    sfxdb = sfxdbclient.SFXDBClient()
 except Exception as e:
     logger.info(f"Exception: {e}. Unable to connect to mongo database.")
+
+sfxdb = sfxdbclient.SFXDBClient()
 
 
 def get_user(user_account, api_key):

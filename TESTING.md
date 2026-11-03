@@ -21,3 +21,6 @@ Run the backend tests from this repository with:
 The tests replace database clients with local fakes. They must not connect to
 HEIDI, MXDB, FFCS or MongoDB Atlas. `heidi-test` shares production data and is
 not an automated-test target.
+
+The SFXDB client tests use explicit or temporary environment URLs and mocked
+HTTP responses. A running `mxdb-streaming` service is not required.

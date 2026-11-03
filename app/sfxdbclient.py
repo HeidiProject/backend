@@ -1,9 +1,19 @@
+import os
 import requests
 from typing import Any, Dict, List
 
 class SFXDBClient:
-    def __init__(self, base_url: str = "https://_add_url_here:8008"):
-        self.base_url = base_url
+    def __init__(self, base_url: str | None = None):
+        configured_url = (
+            base_url if base_url is not None else os.environ.get("SFXDB_BASE_URL")
+        )
+        if not isinstance(configured_url, str) or not configured_url.strip():
+            raise ValueError(
+                "SFXDB base URL is not configured. Set SFXDB_BASE_URL or pass "
+                "base_url explicitly."
+            )
+
+        self.base_url = configured_url.strip().rstrip("/")
         self.session = requests.Session()
 
     def get_experiment_data(self, experiment_group: str = "") -> List[Dict[str, Any]]:
@@ -18,7 +28,7 @@ class SFXDBClient:
         """
         url = f"{self.base_url}/experiment-data/"
         params = {"experiment_group": experiment_group}
-        
+
         try:
             response = self.session.get(url, params=params)
             response.raise_for_status()
@@ -27,7 +37,7 @@ class SFXDBClient:
             print(f"HTTP error occurred: {http_err}")
         except requests.exceptions.RequestException as req_err:
             print(f"Error occurred during the request: {req_err}")
-        
+
         return []
 
 
@@ -43,7 +53,7 @@ class SFXDBClient:
         """
         url = f"{self.base_url}/experiment-data-summary/"
         params = {"experiment_group": experiment_group}
-        
+
         try:
             response = self.session.get(url, params=params)
             response.raise_for_status()
@@ -52,9 +62,9 @@ class SFXDBClient:
             print(f"HTTP error occurred: {http_err}")
         except requests.exceptions.RequestException as req_err:
             print(f"Error occurred during the request: {req_err}")
-        
+
         return []
-    
+
 
     def get_ffcs_campaigns(self, user_account: str = "") -> List[Dict[str, Any]]:
         """
@@ -68,7 +78,7 @@ class SFXDBClient:
         """
         url = f"{self.base_url}/ffcs-summary/"
         params = {"user_account": user_account}
-        
+
         try:
             response = self.session.get(url, params=params)
             response.raise_for_status()
@@ -77,9 +87,9 @@ class SFXDBClient:
             print(f"HTTP error occurred: {http_err}")
         except requests.exceptions.RequestException as req_err:
             print(f"Error occurred during the request: {req_err}")
-        
+
         return []
-    
+
 
     def get_ffcs_campaign_data_summary(self, user_account: str = "", campaign_id: str = "") -> List[Dict[str, Any]]:
         """
@@ -93,7 +103,7 @@ class SFXDBClient:
         """
         url = f"{self.base_url}/ffcs-campaign-summary/"
         params = {"user_account": user_account, "campaign_id": campaign_id}
-        
+
         try:
             response = self.session.get(url, params=params)
             response.raise_for_status()
@@ -102,7 +112,7 @@ class SFXDBClient:
             print(f"HTTP error occurred: {http_err}")
         except requests.exceptions.RequestException as req_err:
             print(f"Error occurred during the request: {req_err}")
-        
+
         return []
 
 
